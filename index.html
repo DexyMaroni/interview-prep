@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Interview Prep — AI Question Generator</title>
+
+    <!-- Google Fonts — loaded before the stylesheet so text renders correctly -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- All visual styles live in style.css — nothing inline -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+
+    <!-- =============================================
+      HEADER
+      Branding, page title, and a one-line description.
+      No interaction — purely informational.
+    ============================================= -->
+    <header class="page-header">
+      <p class="eyebrow">Interview Prep</p>
+      <h1>Prepare with <em>confidence</em></h1>
+      <p class="subtitle">
+        Enter a job title and get 3 tailored interview questions.
+        Tap any card to reveal a sample answer.
+      </p>
+    </header>
+
+
+    <!-- =============================================
+      MAIN CONTENT
+      Everything the user interacts with lives here.
+    ============================================= -->
+    <main class="main-content">
+
+
+      <!-- -------------------------------------------
+        INPUT SECTION
+        Accepts the job title. Submitting triggers
+        the API call in script.js.
+        Pre-filled with the example from the brief.
+      ------------------------------------------- -->
+      <section class="input-section">
+
+        <label class="input-label" for="role-input">Job title</label>
+
+        <div class="input-row">
+
+          <input
+            type="text"
+            id="role-input"
+            class="role-input"
+            placeholder="e.g. Customer Success Manager"
+            value="Customer Success Manager"
+            maxlength="120"
+            autocomplete="off"
+            aria-describedby="hint-text"
+          />
+
+          <!--
+            Disabled on page load.
+            script.js enables it once the input has text,
+            and disables it again while the API is in flight.
+          -->
+          <button id="submit-btn" class="submit-btn" disabled>
+            Generate questions
+          </button>
+
+        </div>
+
+        <!--
+          Dual-purpose feedback line below the input.
+          - Shows a validation message if the field is empty on submit.
+          - Shows a success hint once cards are displayed.
+          - Populated and cleared by script.js.
+        -->
+        <p id="hint-text" class="hint-text" aria-live="polite"></p>
+
+      </section>
+
+
+      <!-- -------------------------------------------
+        LOADING STATE
+        Three skeleton cards shown while the API
+        request is in flight. Matches the height of
+        the real flashcards so the layout does not jump.
+        Hidden by default — script.js toggles [hidden].
+      ------------------------------------------- -->
+      <section id="loading-section" class="card-grid" hidden>
+        <div class="skeleton-card" aria-hidden="true"></div>
+        <div class="skeleton-card" aria-hidden="true"></div>
+        <div class="skeleton-card" aria-hidden="true"></div>
+      </section>
+
+
+      <!-- -------------------------------------------
+        ERROR STATE
+        Shown when the API call fails for any reason
+        (network error, bad key, rate limit, etc.).
+        Hidden by default — script.js toggles [hidden]
+        and writes the message into #error-message.
+      ------------------------------------------- -->
+      <section id="error-section" hidden aria-live="assertive">
+        <p id="error-message" class="error-message"></p>
+      </section>
+
+
+      <!-- -------------------------------------------
+        RESULTS — FLASHCARD GRID
+        Empty on load. script.js injects 3 flashcard
+        elements here after a successful API response.
+
+        Each injected card will follow this structure:
+
+        <article class="flashcard" tabindex="0"
+                 aria-label="Question 1 — tap to flip">
+          <div class="card-inner">
+
+            <div class="card-front">
+              <span class="card-number">01</span>
+              <p class="card-question">[question text]</p>
+              <span class="card-hint">Tap to reveal answer</span>
+            </div>
+
+            <div class="card-back">
+              <p class="card-answer">[answer text]</p>
+              <span class="card-hint">Move away to flip back</span>
+            </div>
+
+          </div>
+        </article>
+
+        The flip animation is handled entirely by CSS.
+        script.js only adds / removes the .is-flipped class.
+      ------------------------------------------- -->
+      <section id="results-section" class="card-grid">
+        <!-- Flashcards injected here by script.js -->
+      </section>
+
+
+    </main>
+
+
+    <!-- =============================================
+      FOOTER
+      Simple attribution. Kept outside <main>
+      so it is always at the bottom of the page.
+    ============================================= -->
+    <footer class="page-footer">
+      <p>Powered by Gemini AI</p>
+    </footer>
+
+
+    <!--
+      script.js is loaded at the very end of <body>.
+      This ensures the HTML is fully parsed before
+      JavaScript runs — no need for DOMContentLoaded wrappers.
+    -->
+    <script src="script.js"></script>
+
+  </body>
+
+</html>
