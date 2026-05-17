@@ -1,0 +1,499 @@
+/* ==============================================
+   INTERVIEW PREP — style.css
+   All visual styles for the page.
+   Organised in the same order as the HTML:
+   1. Design tokens (CSS variables)
+   2. Reset & base
+   3. Page layout
+   4. Header
+   5. Input section
+   6. Loading skeletons
+   7. Error state
+   8. Flashcard — 3D flip
+   9. Footer
+   10. Responsive (mobile)
+============================================== */
+
+
+/* ----------------------------------------------
+   1. DESIGN TOKENS
+   Central place to change colours, fonts,
+   spacing, and timing across the whole page.
+---------------------------------------------- */
+:root {
+  /* Colours */
+  --bg:            #F5F2EC;   /* warm off-white page background   */
+  --surface:       #FFFFFF;   /* white card surface                */
+  --ink:           #1A1814;   /* near-black body text              */
+  --ink-muted:     #6B6860;   /* secondary / label text            */
+  --ink-faint:     #A8A59F;   /* placeholder / hint text           */
+  --accent:        #2B4EFF;   /* primary blue — buttons, numbers   */
+  --accent-light:  #E8ECFF;   /* light blue — back face of card    */
+  --border:        rgba(26, 24, 20, 0.10);
+  --danger:        #C0392B;   /* error text                        */
+  --danger-bg:     #FEF0EE;   /* error section background          */
+
+  /* Typography */
+  --font-display:  'DM Serif Display', serif;
+  --font-body:     'DM Sans', sans-serif;
+
+  /* Spacing */
+  --max-width:     580px;     /* content column width              */
+  --gap:           16px;
+
+  /* Radii */
+  --radius-sm:     8px;
+  --radius-md:     12px;
+  --radius-lg:     16px;
+
+  /* Flashcard flip */
+  --flip-duration: 0.5s;
+  --card-height:   200px;     /* fixed height prevents layout jump */
+}
+
+
+/* ----------------------------------------------
+   2. RESET & BASE
+   Removes browser inconsistencies.
+   Sets sensible defaults for all elements.
+---------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%; /* prevent font scaling on iOS rotation */
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  background-color: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px 80px;
+}
+
+
+/* ----------------------------------------------
+   3. PAGE LAYOUT
+   Centers content and stacks sections vertically.
+---------------------------------------------- */
+.page-header,
+.main-content,
+.page-footer {
+  width: 100%;
+  max-width: var(--max-width);
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  flex: 1;
+}
+
+
+/* ----------------------------------------------
+   4. HEADER
+   App name, title, and description.
+---------------------------------------------- */
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Small label above the title */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+
+  /* Decorative lines either side of the eyebrow text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.eyebrow::before,
+.eyebrow::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.4;
+}
+
+/* Display heading — uses the serif font */
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 6vw, 48px);
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+
+/* Italic word in the heading — styled in accent colour */
+.page-header h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.subtitle {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ink-muted);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+
+/* ----------------------------------------------
+   5. INPUT SECTION
+   Label, text input, and submit button.
+---------------------------------------------- */
+.input-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+
+.input-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+
+/* Wraps the input and button side by side */
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.role-input {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0; /* prevents input from overflowing the flex row */
+}
+
+.role-input::placeholder {
+  color: var(--ink-faint);
+}
+
+.role-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(43, 78, 255, 0.12);
+}
+
+.submit-btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 22px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s;
+
+  /* Flex to align spinner icon alongside label text */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #1a3de8;
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.submit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Spinner injected by script.js inside the button while loading */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hint / validation message below the input */
+.hint-text {
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 10px;
+  min-height: 18px; /* stops the section from jumping when text appears */
+}
+
+.hint-text.is-error {
+  color: var(--danger);
+}
+
+
+/* ----------------------------------------------
+   6. LOADING SKELETONS
+   Three placeholder cards shown while the API
+   request is in flight. Same height as real cards.
+---------------------------------------------- */
+
+/* Shared grid used by both skeleton and result cards */
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.skeleton-card {
+  height: var(--card-height);
+  border-radius: var(--radius-lg);
+
+  /* Animated shimmer effect */
+  background: linear-gradient(
+    90deg,
+    #ede9e0 25%,
+    #e3dfd5 50%,
+    #ede9e0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+
+/* ----------------------------------------------
+   7. ERROR STATE
+---------------------------------------------- */
+.error-message {
+  background: var(--danger-bg);
+  border: 1px solid rgba(192, 57, 43, 0.2);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: var(--danger);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+
+/* ----------------------------------------------
+   8. FLASHCARD — 3D FLIP
+   Structure:
+     .flashcard          — outer container, sets perspective
+       .card-inner       — the element that actually rotates
+         .card-front     — visible by default
+         .card-back      — hidden until .is-flipped is added
+
+   How the flip works:
+   - .card-inner has transform-style: preserve-3d so both
+     faces live in the same 3D space.
+   - .card-back starts pre-rotated 180° on the Y axis so
+     it faces away from the viewer.
+   - When .is-flipped is added to .flashcard, .card-inner
+     rotates 180° — the front disappears, the back appears.
+   - backface-visibility: hidden on both faces ensures only
+     the correct face is visible at any time.
+---------------------------------------------- */
+.flashcard {
+  height: var(--card-height);
+  perspective: 1200px; /* depth of the 3D space */
+  cursor: pointer;
+
+  /* Keyboard accessibility — allows Tab focus */
+  outline: none;
+}
+
+/* Visible focus ring for keyboard users */
+.flashcard:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+
+/* The rotating layer — holds both faces */
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) ease;
+}
+
+/* Flipped state — added and removed by script.js */
+.flashcard.is-flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Shared styles for both faces */
+.card-front,
+.card-back {
+  position: absolute;
+  inset: 0; /* shorthand for top/right/bottom/left: 0 */
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  backface-visibility: hidden; /* hide the face when it's rotated away */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+/* FRONT — white card with question */
+.card-front {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+/* BACK — accent blue with answer */
+.card-back {
+  background: var(--accent-light);
+  border: 1px solid rgba(43, 78, 255, 0.15);
+  transform: rotateY(180deg); /* pre-rotated so it starts facing away */
+}
+
+/* Question number — large serif digit */
+.card-number {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--accent);
+  opacity: 0.4;
+  line-height: 1;
+}
+
+/* The question text itself */
+.card-question {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.55;
+  flex: 1;
+  margin: 10px 0;
+}
+
+/* The answer text on the back */
+.card-answer {
+  font-size: 14px;
+  color: #0C447C; /* dark blue — readable on accent-light background */
+  line-height: 1.6;
+  flex: 1;
+  margin-bottom: 10px;
+}
+
+/* Small instructional label at the bottom of each face */
+.card-hint {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.card-front .card-hint {
+  color: var(--ink-faint);
+}
+
+.card-back .card-hint {
+  color: rgba(12, 68, 124, 0.5);
+}
+
+/* Staggered entrance animation when cards are injected */
+.flashcard {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: cardEntrance 0.35s ease forwards;
+}
+
+.flashcard:nth-child(2) { animation-delay: 0.08s; }
+.flashcard:nth-child(3) { animation-delay: 0.16s; }
+
+@keyframes cardEntrance {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ----------------------------------------------
+   9. FOOTER
+---------------------------------------------- */
+.page-footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+
+/* ----------------------------------------------
+   10. RESPONSIVE — MOBILE
+   Adjusts layout for screens under 480px.
+---------------------------------------------- */
+@media (max-width: 480px) {
+
+  body {
+    padding: 36px 16px 60px;
+  }
+
+  /* Stack input and button vertically on small screens */
+  .input-row {
+    flex-direction: column;
+  }
+
+  .submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .input-section {
+    padding: 20px;
+  }
+
+  /* Slightly taller cards on mobile to fit text comfortably */
+  :root {
+    --card-height: 220px;
+  }
+}
