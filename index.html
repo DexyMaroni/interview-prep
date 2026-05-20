@@ -143,6 +143,17 @@
         script.js only adds / removes the .is-flipped class.
       ------------------------------------------- -->
       <section id="results-section" class="card-grid">
+
+        <!--
+          Idle state — visible on page load only.
+          script.js hides this as soon as the user
+          generates questions for the first time.
+        -->
+        <div id="idle-state" class="idle-state">
+          <div class="idle-icon">💡</div>
+          <p class="idle-text">Your questions will appear here.<br/>Enter a job title above to get started.</p>
+        </div>
+
         <!-- Flashcards injected here by script.js -->
       </section>
 

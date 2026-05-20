@@ -1,0 +1,12 @@
+# netlify.toml
+# Netlify configuration file.
+# Tells Netlify where to find the serverless functions
+# and sets the publish directory for the static files.
+
+[build]
+  # The static files (index.html, style.css, script.js)
+  # are served from the root of the project
+  publish = "."
+
+  # Netlify looks here for serverless functions
+  functions = "netlify/functions"

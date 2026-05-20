@@ -57,6 +57,14 @@
    Removes browser inconsistencies.
    Sets sensible defaults for all elements.
 ---------------------------------------------- */
+
+/*
+  Critical fix: the HTML [hidden] attribute sets display:none,
+  but any CSS display rule (e.g. display:flex on .card-grid)
+  will override it. This rule restores the correct behaviour
+  and !important ensures nothing overrides it again.
+*/
+[hidden] { display: none !important; }
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -458,7 +466,31 @@ body {
 
 
 /* ----------------------------------------------
-   9. FOOTER
+   9. IDLE / EMPTY STATE
+   Shown on page load before the user generates
+   anything. Gives the space below the form a
+   purpose instead of looking empty or broken.
+---------------------------------------------- */
+.idle-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-faint);
+}
+
+.idle-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.idle-text {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+/* ----------------------------------------------
+   10. FOOTER
 ---------------------------------------------- */
 .page-footer {
   margin-top: 40px;

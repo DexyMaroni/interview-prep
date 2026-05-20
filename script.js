@@ -15,37 +15,16 @@
 
 /* ----------------------------------------------
    1. CONFIGURATION
-   Gemini API key used with duration
-   of 30 days for security concerns.
-   In a production application, API 
-   calls would be routed through a 
-   serverless function to keep the 
-   API key server-side and secured.
+   No API key stored here.
+   The key lives in Netlify's environment variables
+   (Site settings → Environment variables →
+   GEMINI_API_KEY) and is read only by the
+   serverless function in netlify/functions/ask.js.
+
+   The browser calls our own Netlify function —
+   never the Gemini API directly.
 ---------------------------------------------- */
-const CONFIG = {
-  
-  API_KEY: "AIzaSyAoqo6pF5P2WiqUqJrwSLuxwuBUY44sKsI",
-
-  // Gemini 2.0 Flash — fast, free tier, well-suited for short responses
-  API_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-
-  // Hard cap on total tokens returned — prevents runaway long responses
-  MAX_TOKENS: 400,
-
-  // System prompt: defines the output format and enforces word limits
-  SYSTEM_PROMPT: `You generate exactly 3 interview question-and-answer pairs for a given job role.
-
-Rules:
-- Each question: under 20 words, open-ended, specific to the role
-- Each answer: under 40 words, 2 to 3 key talking points only
-- No preamble, no sign-off, no extra commentary
-- Return only a valid JSON array in this exact shape:
-[
-  { "question": "...", "answer": "..." },
-  { "question": "...", "answer": "..." },
-  { "question": "...", "answer": "..." }
-]`,
-};
+const FUNCTION_URL = "/.netlify/functions/ask";
 
 
 /* ----------------------------------------------
@@ -53,13 +32,14 @@ Rules:
    Grab every element we need once at the top.
    Avoids repeated querySelector calls throughout.
 ---------------------------------------------- */
-const roleInput     = document.getElementById("role-input");
-const submitBtn     = document.getElementById("submit-btn");
-const hintText      = document.getElementById("hint-text");
-const loadingSection  = document.getElementById("loading-section");
-const errorSection  = document.getElementById("error-section");
-const errorMessage  = document.getElementById("error-message");
+const roleInput      = document.getElementById("role-input");
+const submitBtn      = document.getElementById("submit-btn");
+const hintText       = document.getElementById("hint-text");
+const loadingSection = document.getElementById("loading-section");
+const errorSection   = document.getElementById("error-section");
+const errorMessage   = document.getElementById("error-message");
 const resultsSection = document.getElementById("results-section");
+const idleState      = document.getElementById("idle-state");
 
 
 /* ----------------------------------------------
@@ -90,10 +70,10 @@ roleInput.addEventListener("keydown", (event) => {
 
 // Show the loading skeletons, hide everything else
 function showLoading() {
-  loadingSection.hidden  = false;
-  errorSection.hidden    = true;
+  loadingSection.hidden    = false;
+  errorSection.hidden      = true;
   resultsSection.innerHTML = "";
-  submitBtn.disabled     = true;
+  submitBtn.disabled       = true;
 
   // Replace button label with a spinner while waiting
   submitBtn.innerHTML = `
@@ -111,7 +91,7 @@ function hideLoading() {
 
 // Display a human-readable error message
 function showError(message) {
-  errorSection.hidden   = false;
+  errorSection.hidden      = false;
   errorMessage.textContent = message;
 }
 
@@ -121,6 +101,9 @@ function resetState() {
   resultsSection.innerHTML = "";
   hintText.textContent     = "";
   hintText.classList.remove("is-error");
+
+  // Hide the idle placeholder once the user starts generating
+  if (idleState) idleState.hidden = true;
 }
 
 
@@ -146,8 +129,8 @@ function renderCards(pairs, role) {
 
     // Build the card element using the structure documented in index.html
     const card = document.createElement("article");
-    card.className  = "flashcard";
-    card.tabIndex   = 0; // makes the card focusable with keyboard Tab
+    card.className = "flashcard";
+    card.tabIndex  = 0; // makes the card focusable with keyboard Tab
     card.setAttribute("aria-label", `Question ${index + 1} — tap to flip`);
 
     card.innerHTML = `
@@ -210,63 +193,40 @@ function attachFlipBehaviour(card) {
 
 /* ----------------------------------------------
    7. API CALL
-   Sends the job role to Gemini and returns
-   the parsed array of question-answer pairs.
-   Throws an error if anything goes wrong so
-   the caller can display a message to the user.
+   Sends the job role to our Netlify serverless
+   function and returns the parsed array of
+   question-answer pairs.
+
+   The browser never calls Gemini directly —
+   it calls /.netlify/functions/ask which reads
+   the API key from Netlify environment variables.
 ---------------------------------------------- */
 async function fetchQuestions(role) {
 
-  const response = await fetch(`${CONFIG.API_URL}?key=${CONFIG.API_KEY}`, {
+  const response = await fetch(FUNCTION_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      // System instruction sets the rules for the model
-      systemInstruction: {
-        parts: [{ text: CONFIG.SYSTEM_PROMPT }],
-      },
-      // User message contains only the job role — no personal info
-      contents: [
-        {
-          parts: [{ text: `Generate 3 interview question-answer pairs for: ${role}` }],
-        },
-      ],
-      // Cap total output to prevent long responses
-      generationConfig: {
-        maxOutputTokens: CONFIG.MAX_TOKENS,
-      },
-    }),
+    // Send only the job role — no API key, no personal info
+    body: JSON.stringify({ role }),
   });
 
-  // Handle non-200 responses (bad key, rate limit, etc.)
+  // Handle non-200 responses (server error, bad config, etc.)
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    const message   = errorData?.error?.message || `Request failed (${response.status})`;
+    const message   = errorData?.error || `Request failed (${response.status})`;
     throw new Error(message);
   }
 
   const data = await response.json();
 
-  // Extract the text from Gemini's response structure
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-  if (!rawText) {
-    throw new Error("The AI returned an empty response. Please try again.");
-  }
-
-  // Parse the JSON array from the response text
-  // Strip markdown code fences if the model wraps the JSON in them
-  const cleaned = rawText.replace(/```json|```/g, "").trim();
-  const pairs   = JSON.parse(cleaned);
-
   // Validate the structure before returning
-  if (!Array.isArray(pairs) || pairs.length === 0) {
+  if (!Array.isArray(data.pairs) || data.pairs.length === 0) {
     throw new Error("Unexpected response format. Please try again.");
   }
 
-  return pairs;
+  return data.pairs;
 }
 
 
