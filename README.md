@@ -18,8 +18,8 @@ A simple web page that generates 3 tailored interview questions for any job role
 
 ## Tech decisions
 
-### Why Gemini 2.0 Flash?
-The brief recommended `ai.google.dev` as a free option with no credit card required. Gemini 2.0 Flash sits on that free tier and is optimised for speed — ideal for a focused task like generating three short questions. A faster model means a shorter loading state and a better user experience.
+### Why Gemini 2.5 Flash?
+The brief recommended `ai.google.dev` as a free option with no credit card required. Gemini 2.5 Flash is the current free tier model and is optimised for speed — ideal for a focused task like generating three short questions. A faster model means a shorter loading state and a better user experience.
 
 ### Why vanilla HTML, CSS, and JavaScript?
 No framework, no build step, no dependencies to install or update. The entire app is three files that open directly in a browser. This keeps the code easy to read, easy to run, and straightforward to deploy to a static host like GitHub Pages.
@@ -37,8 +37,8 @@ A plain list of questions works, but a flashcard adds a layer of interactivity t
 
 ## Known trade-offs
 
-**API key is visible in source code.**
-Because GitHub Pages serves static files with no server, there is no secure place to store the API key. For this project the Gemini free-tier key is used, which has built-in rate limits that cap potential misuse. In a production application, API calls would be routed through a serverless function (e.g. Cloudflare Workers or Vercel Functions) to keep the key server-side.
+**API key is stored securely in environment variables.**
+The Gemini API key is never written in the source code or committed to the repository. It lives in Netlify's environment variables and is accessed only by the serverless function at runtime. Even with full access to the repository, there is no key to steal.
 
 ---
 
@@ -86,17 +86,21 @@ and serves the static files — matching the live environment exactly.
 
 ```
 interview-prep/
-├── index.html    — page structure and element layout
-├── style.css     — all visual styles, including the 3D card flip
-├── script.js     — API call, card rendering, and flip behaviour
-└── README.md     — this file
+├── index.html                  — page structure and element layout
+├── style.css                   — all visual styles, including the 3D card flip
+├── script.js                   — card rendering, flip behaviour, calls the function
+├── netlify.toml                — Netlify config: publish directory and functions folder
+├── .gitignore                  — excludes .env so the API key is never committed
+├── README.md                   — this file
+└── netlify/
+    └── functions/
+        └── ask.js              — serverless function: reads API key, calls Gemini
 ```
 
 ---
 
 ## Built with
 
-- [Google Gemini 2.0 Flash](https://ai.google.dev) — AI model
+- [Google Gemini 2.5 Flash](https://ai.google.dev) — AI model
 - [DM Serif Display + DM Sans](https://fonts.google.com) — Typography
-- GitHub Pages — Hosting
-- Netlify — Hosting
+- [Netlify](https://netlify.com) — Hosting and serverless functions
