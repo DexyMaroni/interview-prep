@@ -1,0 +1,3 @@
+# Local environment variables — never commit this
+# API keys go here when running locally with netlify dev
+.env

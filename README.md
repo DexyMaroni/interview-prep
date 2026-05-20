@@ -2,7 +2,7 @@
 
 A simple web page that generates 3 tailored interview questions for any job role, powered by Google Gemini AI. Tap any question card to reveal a sample answer.
 
-**Live site:** https://dexymaroni.github.io/interview-prep
+**Live site:** https://interview-prep2026.netlify.app
 
 ---
 
@@ -27,8 +27,8 @@ No framework, no build step, no dependencies to install or update. The entire ap
 ### Why separate files instead of one HTML file?
 Splitting structure (HTML), style (CSS), and behaviour (JS) into separate files follows the principle of separation of concerns. It makes each file easier to read and maintain independently.
 
-### Why GitHub Pages?
-Free, permanent static hosting that works directly from a GitHub repository. No server configuration required. HTTPS is included automatically, which is required for making API calls from the browser.
+### Why Netlify?
+Free static hosting with built-in serverless functions. Unlike GitHub Pages, Netlify allows server-side code — this is what makes it possible to store the API key securely in environment variables instead of the source code. HTTPS is included automatically.
 
 ### Why a flashcard UI?
 A plain list of questions works, but a flashcard adds a layer of interactivity that makes the tool genuinely useful for interview practice — not just reading, but actively testing recall. The flip animation is handled entirely in CSS using 3D transforms, with JavaScript only toggling a single class.
@@ -44,18 +44,41 @@ Because GitHub Pages serves static files with no server, there is no secure plac
 
 ## How to run locally
 
+The app uses a Netlify serverless function to keep the API key secure,
+so it cannot run by simply opening `index.html` in a browser — it needs
+a server that can execute the function.
+
+The easiest way to run it locally is with the Netlify CLI:
+
 1. Clone the repository
    ```
    git clone https://github.com/DexyMaroni/interview-prep.git
+   cd interview-prep
    ```
 
-2. Open `script.js` and replace `YOUR_GEMINI_API_KEY` with your key
-   ```js
-   API_KEY: "request through email or use yours", 
+2. Install the Netlify CLI
+   ```
+   npm install -g netlify-cli
+   ```
+
+3. Create a `.env` file in the project root and add your API key
+   ```
+   GEMINI_API_KEY=your-key-here
    ```
    Get a free key at: https://ai.google.dev
 
-3. Open `index.html` directly in your browser — no server or install needed
+4. Start the local dev server
+   ```
+   netlify dev
+   ```
+
+5. Open `http://localhost:8888` in your browser
+
+The Netlify CLI reads the `.env` file, runs the serverless function locally,
+and serves the static files — matching the live environment exactly.
+
+> **Note:** The `.env` file is listed in `.gitignore` and is never committed
+> to the repository. The API key stays on your machine only.
 
 ---
 
@@ -76,3 +99,4 @@ interview-prep/
 - [Google Gemini 2.0 Flash](https://ai.google.dev) — AI model
 - [DM Serif Display + DM Sans](https://fonts.google.com) — Typography
 - GitHub Pages — Hosting
+- Netlify — Hosting
